@@ -5,7 +5,7 @@ const BASE_URL = 'http://localhost:8000'
 export async function getDocuments(): Promise<DocumentItem[]> {
   const res = await fetch(`${BASE_URL}/documents`)
   const data = await res.json()
-  return data.documents
+  return data
 }
 
 export async function createDocument(doc: Omit<DocumentItem, 'id'>): Promise<DocumentItem> {

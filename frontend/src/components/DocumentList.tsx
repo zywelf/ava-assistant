@@ -16,8 +16,8 @@ function DocumentList({ docs, onEdit, onDelete }: DocumentListProps) {
         >
           <h2 className="font-semibold text-zinc-100">{doc.title}</h2>
           <p className="text-zinc-400 text-sm mt-1">{doc.content}</p>
-          <div className="flex items-center gap-2">
-            <button onClick={() => onDelete(doc.id)} className="mt-2 text-red-500 text-sm hover:text-red-400">
+          <div className="flex items-center gap-2 mt-2">
+            <button onClick={() => onDelete(doc.id)} className=" text-red-500 text-sm hover:text-red-400">
               Elimina
             </button>
             <button onClick={() => onEdit(doc)} className="text-blue-500 text-sm hover:text-blue-400">
