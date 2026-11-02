@@ -1,5 +1,6 @@
 import io
-from fastapi import FastAPI, Depends, UploadFile, File
+import os
+from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pypdf import PdfReader
@@ -18,6 +19,8 @@ app.add_middleware(
     allow_methods=["*"],  # Allow GET, POST, etc.
     allow_headers=["*"],
 )
+
+ALLOWED = {".txt", ".md", ".pdf", ".csv", ".log"}
 
 
 # When a GET request hits the root path "/", FastAPI runs this function,
@@ -50,11 +53,21 @@ def create_document(doc: DocumentCreate, db: Session = Depends(get_db)):
 @app.post("/documents/upload", response_model=DocumentRead)
 async def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
     content = await file.read()  # Read the BYTE of the file
-    if file.filename.lower().endswith(".pdf"):
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Format not supported: {ext}. Allowed: {', '.join(sorted(ALLOWED))}",
+        )
+    if ext == ".pdf":
         reader = PdfReader(io.BytesIO(content))
         text = "\n".join(page.extract_text() for page in reader.pages)
     else:
         text = content.decode("utf-8-sig")
+    if not text.strip():
+        raise HTTPException(
+            status_code=422, detail="Not text extractable from the file"
+        )
     doc = DocumentCreate(title=file.filename, content=text)
     return services.create_document(db, doc)
 
