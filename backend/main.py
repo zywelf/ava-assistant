@@ -1,9 +1,11 @@
-from fastapi import FastAPI, Depends
-from models import DocumentCreate, DocumentRead
+import io
+from fastapi import FastAPI, Depends, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from pypdf import PdfReader
+from models import DocumentCreate, DocumentRead
 from db import get_db
 import services
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -42,6 +44,18 @@ def search_documents(keyword: str, db: Session = Depends(get_db)):
 
 @app.post("/documents", status_code=201, response_model=DocumentRead)
 def create_document(doc: DocumentCreate, db: Session = Depends(get_db)):
+    return services.create_document(db, doc)
+
+
+@app.post("/documents/upload", response_model=DocumentRead)
+async def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    content = await file.read()  # Read the BYTE of the file
+    if file.filename.lower().endswith(".pdf"):
+        reader = PdfReader(io.BytesIO(content))
+        text = "\n".join(page.extract_text() for page in reader.pages)
+    else:
+        text = content.decode("utf-8-sig")
+    doc = DocumentCreate(title=file.filename, content=text)
     return services.create_document(db, doc)
 
 
