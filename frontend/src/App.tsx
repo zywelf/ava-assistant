@@ -3,9 +3,10 @@ import type { DocumentItem } from './types'
 import { useDocuments } from './hooks/useDocuments'
 import DocumentForm from './components/DocumentForm'
 import DocumentList from './components/DocumentList'
+import DocumentUpload from './components/DocumentUpload'
 
 function App() {
-  const { docs, loading, loadError, createDoc, updateDoc, removeDoc } = useDocuments()
+  const { docs, loading, loadError, createDoc, updateDoc, removeDoc, uploadDoc } = useDocuments()
   const [editingDoc, setEditingDoc] = useState<DocumentItem | null>(null)
 
   return (
@@ -23,6 +24,7 @@ function App() {
           onUpdate={updateDoc}
           onCancel={() => setEditingDoc(null)}
         />
+        <DocumentUpload onUpload={uploadDoc} />
 
         {loading ? (
           <div className="flex justify-center py-10">

@@ -66,7 +66,7 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
         text = content.decode("utf-8-sig")
     if not text.strip():
         raise HTTPException(
-            status_code=422, detail="Not text extractable from the file"
+            status_code=422, detail="Text not extractable from the pdf file"
         )
     doc = DocumentCreate(title=file.filename, content=text)
     return services.create_document(db, doc)

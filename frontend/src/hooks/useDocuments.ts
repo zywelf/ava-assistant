@@ -38,5 +38,10 @@ export function useDocuments() {
     setDocs(docs.filter((doc) => doc.id !== id))
   }
 
-  return { docs, loading, loadError, createDoc, updateDoc, removeDoc }
+  async function uploadDoc(file: File) {
+    const uploaded = await api.uploadDocument(file)
+    setDocs([...docs, uploaded])
+  }
+
+  return { docs, loading, loadError, createDoc, updateDoc, removeDoc, uploadDoc }
 }

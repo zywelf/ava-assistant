@@ -29,3 +29,17 @@ export async function updateDocument(id: number, doc: Omit<DocumentItem, 'id'>):
 export async function deleteDocument(id: number): Promise<void> {
   await fetch(`${BASE_URL}/documents/${id}`, { method: 'DELETE' })
 }
+
+export async function uploadDocument(file: File): Promise<DocumentItem> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch(`${BASE_URL}/documents/upload`, {
+    method: 'POST',
+    body: formData,
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.detail ?? 'Upload non riuscito')
+  }
+  return res.json()
+}
