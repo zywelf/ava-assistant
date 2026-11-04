@@ -1,4 +1,4 @@
-# Baby Ultron Assistant
+# AVA Assistant
 
 A full-stack document assistant: a REST API backend with a React frontend to
 upload, store, search and manage documents. Built as a learning and portfolio
@@ -55,7 +55,7 @@ models.py      → Pydantic schemas (API input/output)
 - Node.js 18+
 - PostgreSQL running locally, with a database created:
   ```sql
-  CREATE DATABASE baby_ultron;
+  CREATE DATABASE ava_assistant;
   ```
 
 ### Backend
@@ -70,7 +70,7 @@ pip install -r requirements.txt
 Create a `.env` file in `backend/` with your database URL:
 
 ```
-DATABASE_URL=postgresql+psycopg://postgres:YOUR_PASSWORD@localhost:5432/baby_ultron
+DATABASE_URL=postgresql+psycopg://postgres:YOUR_PASSWORD@localhost:5432/ava_assistant
 ```
 
 Then run the server:

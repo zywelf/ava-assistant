@@ -12,8 +12,8 @@ function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10">
       <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-8 tracking-tight">
-          <span className="text-red-500">⬢</span> BABY ULTRON
+        <h1 className="text-6xl font-bold mb-8 tracking-tight">
+          <span className="text-red-500">⬢</span> AVA
           <span className="text-zinc-500 text-lg font-normal"> / documenti</span>
         </h1>
 
