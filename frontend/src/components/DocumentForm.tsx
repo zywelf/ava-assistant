@@ -15,7 +15,7 @@ function DocumentForm({ editingDoc, onCreate, onUpdate, onCancel }: DocumentForm
 
   async function handleSubmit() {
     if (title.trim() === '') {
-      setError('Il titolo è obbligatorio!')
+      setError('Title is required')
       return
     }
     setError('')
@@ -37,28 +37,28 @@ function DocumentForm({ editingDoc, onCreate, onUpdate, onCancel }: DocumentForm
         e.preventDefault()
         handleSubmit()
       }}
-      className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-8 flex flex-col gap-3"
+      className="flex flex-col gap-3"
     >
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Titolo"
-        className="bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+        placeholder="Title"
+        className="bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent"
       />
       {error && <p className="text-red-500 text-sm">{error}</p>}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Contenuto"
+        placeholder="Content"
         rows={4}
-        className="bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent"
       />
       <div className="flex gap-3">
         <button
           disabled={title.trim() === ''}
-          className="bg-red-600 text-white rounded px-4 py-2 font-medium hover:bg-red-500 transition self-start uppercase tracking-wide text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-accent-strong text-accent-contrast rounded px-4 py-2 font-medium hover:bg-accent transition self-start uppercase tracking-wide text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {editingDoc === null ? 'Crea' : 'Aggiorna'}
+          {editingDoc === null ? 'Create' : 'Update'}
         </button>
         {editingDoc !== null && (
           <button
@@ -66,7 +66,7 @@ function DocumentForm({ editingDoc, onCreate, onUpdate, onCancel }: DocumentForm
             onClick={onCancel}
             className="bg-blue-600 text-white rounded px-4 py-2 font-medium hover:bg-blue-500 transition self-start uppercase tracking-wide text-sm"
           >
-            Annulla
+            Cancel
           </button>
         )}
       </div>

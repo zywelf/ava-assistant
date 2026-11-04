@@ -15,7 +15,7 @@ export function useDocuments() {
         setDocs(data)
       } catch (e) {
         console.error(e)
-        setLoadError('Impossibile caricare i documenti.')
+        setLoadError('Could not load documents.')
       } finally {
         setLoading(false)
       }

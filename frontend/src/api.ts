@@ -2,6 +2,11 @@ import type { DocumentItem } from './types'
 
 const BASE_URL = 'http://localhost:8000'
 
+async function errorMessage(res: Response, fallback: string): Promise<string> {
+  const data = await res.json().catch(() => null)
+  return typeof data?.detail === 'string' ? data.detail : fallback
+}
+
 export async function getDocuments(): Promise<DocumentItem[]> {
   const res = await fetch(`${BASE_URL}/documents`)
   const data = await res.json()
@@ -38,8 +43,15 @@ export async function uploadDocument(file: File): Promise<DocumentItem> {
     body: formData,
   })
   if (!res.ok) {
-    const data = await res.json().catch(() => null)
-    throw new Error(data?.detail ?? 'Upload non riuscito')
+    throw new Error(await errorMessage(res, 'Upload failed'))
+  }
+  return res.json()
+}
+
+export async function semanticSearch(query: string): Promise<DocumentItem[]> {
+  const res = await fetch(`${BASE_URL}/documents/semantic-search?query=${encodeURIComponent(query)}`)
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, 'Search failed'))
   }
   return res.json()
 }

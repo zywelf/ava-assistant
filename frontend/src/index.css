@@ -1,5 +1,52 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-ultron: #ef4444;
+  --color-ultron-strong: #dc2626;
+  --color-vision: #fbbf24;
+  --color-vision-strong: #f59e0b;
+}
+
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ef4444;
+}
+
+@property --accent-strong {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dc2626;
+}
+
+@property --accent-contrast {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffffff;
+}
+
+:root {
+  --accent: var(--color-ultron);
+  --accent-strong: var(--color-ultron-strong);
+  --accent-contrast: var(--color-white);
+  transition:
+    --accent 400ms ease,
+    --accent-strong 400ms ease,
+    --accent-contrast 400ms ease;
+}
+
+:root[data-mode='vision'] {
+  --accent: var(--color-vision);
+  --accent-strong: var(--color-vision-strong);
+  --accent-contrast: var(--color-zinc-950);
+}
+
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-contrast: var(--accent-contrast);
+}
+
 body {
   font-family: "Space Grotesk", sans-serif;
 }

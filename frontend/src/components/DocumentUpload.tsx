@@ -15,12 +15,12 @@ function DocumentUpload({ onUpload }: DocumentUploadProps) {
     try {
       setUploadError('')
       await onUpload(selectedFile)
-      setUploadSuccess(`"${selectedFile.name}" caricato con successo`)
+      setUploadSuccess(`"${selectedFile.name}" uploaded successfully`)
       setTimeout(() => setUploadSuccess(''), 3000)
       setSelectedFile(null)
       setInputKey((k) => k + 1)
     } catch (e) {
-      setUploadError(e instanceof Error ? e.message : 'Upload non riuscito')
+      setUploadError(e instanceof Error ? e.message : 'Upload failed')
     }
   }
 
@@ -35,9 +35,9 @@ function DocumentUpload({ onUpload }: DocumentUploadProps) {
       <button
         onClick={handleUpload}
         disabled={!selectedFile}
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        className="rounded-lg bg-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition"
       >
-        Carica
+        Upload
       </button>
       {uploadError && <p className="w-full text-red-500 text-sm">{uploadError}</p>}
       {uploadSuccess && <p className="w-full text-emerald-500 text-sm">{uploadSuccess}</p>}

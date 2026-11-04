@@ -12,16 +12,16 @@ function DocumentList({ docs, onEdit, onDelete }: DocumentListProps) {
       {docs.map((doc) => (
         <li
           key={doc.id}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-red-500/50 transition"
+          className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 hover:border-accent/50 transition"
         >
           <h2 className="font-semibold text-zinc-100">{doc.title}</h2>
           <p className="text-zinc-400 text-sm mt-1 line-clamp-3">{doc.content}</p>
           <div className="flex items-center gap-2 mt-2">
             <button onClick={() => onDelete(doc.id)} className=" text-red-500 text-sm hover:text-red-400">
-              Elimina
+              Delete
             </button>
             <button onClick={() => onEdit(doc)} className="text-blue-500 text-sm hover:text-blue-400">
-              Modifica
+              Edit
             </button>
           </div>
         </li>
