@@ -80,3 +80,8 @@ def delete_document(doc_id: int, db: Session = Depends(get_db)):
 @app.put("/documents/{doc_id}", response_model=DocumentRead)
 def update_document(doc_id: int, doc: DocumentCreate, db: Session = Depends(get_db)):
     return services.update_document(db, doc_id, doc)
+
+
+@app.get("/documents/semantic-search", response_model=list[DocumentRead])
+def semantic_search(query: str, db: Session = Depends(get_db)):
+    return services.semantic_search(db, query)

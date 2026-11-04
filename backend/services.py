@@ -39,3 +39,12 @@ def update_document(db: Session, doc_id, doc: DocumentCreate):
     existing.embedding = embed(doc.content)
     db.commit()
     return existing
+
+
+def semantic_search(db: Session, query: str, limit: int = 3):
+    query_vector = embed(query)
+    return db.scalars(
+        select(Document)
+        .order_by(Document.embedding.cosine_distance(query_vector))
+        .limit(limit)
+    ).all()
