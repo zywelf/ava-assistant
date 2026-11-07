@@ -18,3 +18,10 @@ class DocumentRead(BaseModel):
     content: str
 
     model_config = {"from_attributes": True}
+
+
+class SearchResult(BaseModel):
+    document_id: int
+    title: str
+    position: int
+    content: str

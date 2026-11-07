@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from models import DocumentCreate, DocumentRead
+from models import DocumentCreate, DocumentRead, SearchResult
 from db import get_db
 from extraction import UnsupportedFormatError, EmptyTextError, extract_text
 import services
@@ -69,6 +69,6 @@ def update_document(doc_id: int, doc: DocumentCreate, db: Session = Depends(get_
     return services.update_document(db, doc_id, doc)
 
 
-@app.get("/documents/semantic-search", response_model=list[DocumentRead])
+@app.get("/documents/semantic-search", response_model=list[SearchResult])
 def semantic_search(query: str, db: Session = Depends(get_db)):
     return services.semantic_search(db, query)
