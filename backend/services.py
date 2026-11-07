@@ -5,12 +5,20 @@ from models import DocumentCreate
 from embeddings import embed
 from chunking import chunk_text
 
+# The real work of the app. These functions don't know anything about HTTP:
+# they get data, use the database and give data back
+
 
 def get_documents(db: Session):
+    """Return all the documents."""
     return db.scalars(select(Document)).all()
 
 
 def search_documents(db: Session, keyword: str):
+    """Find the documents that contain a word (upper or lower case doesn't matter).
+
+    Example: "auto" finds "Auto" and "AUTO", but not "macchina"
+    """
     return db.scalars(
         select(Document).where(Document.content.ilike(f"%{keyword}%"))
     ).all()
@@ -27,22 +35,24 @@ def save_chunks(db: Session, document: Document):
                 document_id=document.id,
                 position=position,
                 content=text,
-                embedding=embed(text),
+                embedding=embed(text),  # The embedding of this chunk only
             )
         )
 
 
 def create_document(db: Session, doc: DocumentCreate):
+    """Save a new document and its chunks."""
     new_doc = Document(title=doc.title, content=doc.content)
     db.add(new_doc)
-    db.flush()
+    db.flush()  # Send the document to the DB to get its id, without saving yet
     save_chunks(db, new_doc)
-    db.commit()
+    db.commit()  # Save the document and its chunks together
     db.refresh(new_doc)
     return new_doc
 
 
 def delete_document(db: Session, doc_id):
+    """Delete a document. Its chunks are deleted by the database (cascade)."""
     doc = db.get(Document, doc_id)
     if doc:
         db.delete(doc)
@@ -50,11 +60,12 @@ def delete_document(db: Session, doc_id):
 
 
 def update_document(db: Session, doc_id, doc: DocumentCreate):
+    """Change the title and the content of a document, and redo its chunks."""
     existing = db.get(Document, doc_id)
     existing.title = doc.title
     existing.content = doc.content
 
-    rebuild_chunks(db, existing)
+    rebuild_chunks(db, existing)  # The old chunks belong to the old content
     db.commit()
     return existing
 
@@ -89,9 +100,8 @@ def semantic_search(db: Session, query: str, limit: int = 3):
 def rebuild_chunks(db: Session, document: Document):
     """Delete the chunks of a document and make them again from its content.
 
-    Use it when the content changes, or to redo all the chunks(reindex)
+    Use it when the content changes, or to redo all the chunks (reindex)
     """
-
     # Delete the old chunks
     db.execute(delete(Chunk).where(Chunk.document_id == document.id))
     # Make the new chunks from the content
