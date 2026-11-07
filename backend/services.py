@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from db_models import Document
 from models import DocumentCreate
@@ -57,6 +57,11 @@ def update_document(db: Session, doc_id, doc: DocumentCreate):
     existing.title = doc.title
     existing.content = doc.content
     existing.embedding = embed(doc.content)
+
+    # Delete the old chunks: they belong to the old content
+    db.execute(delete(Chunk).where(Chunk.document_id == existing.id))
+    # Make the new chunks from the new content
+    save_chunks(db, existing)
     db.commit()
     return existing
 
