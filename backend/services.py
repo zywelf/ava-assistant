@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from db_models import Document
 from models import DocumentCreate
 from embeddings import embed
+from db_models import Chunk
+from chunking import chunk_text
 
 
 def get_documents(db: Session):
@@ -15,11 +17,29 @@ def search_documents(db: Session, keyword: str):
     ).all()
 
 
+def save_chunks(db: Session, document: Document):
+    """Split the document content in chunks and save them, each with its embedding.
+
+    Example: a long text becomes chunks 0, 1, 2... all linked to this document
+    """
+    for position, text in enumerate(chunk_text(document.content)):
+        db.add(
+            Chunk(
+                document_id=document.id,
+                position=position,
+                content=text,
+                embedding=embed(text),
+            )
+        )
+
+
 def create_document(db: Session, doc: DocumentCreate):
     new_doc = Document(
         title=doc.title, content=doc.content, embedding=embed(doc.content)
     )
     db.add(new_doc)
+    db.flush()
+    save_chunks(db, new_doc)
     db.commit()
     db.refresh(new_doc)
     return new_doc
