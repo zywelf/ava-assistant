@@ -58,10 +58,7 @@ def update_document(db: Session, doc_id, doc: DocumentCreate):
     existing.content = doc.content
     existing.embedding = embed(doc.content)
 
-    # Delete the old chunks: they belong to the old content
-    db.execute(delete(Chunk).where(Chunk.document_id == existing.id))
-    # Make the new chunks from the new content
-    save_chunks(db, existing)
+    rebuild_chunks(db, existing)
     db.commit()
     return existing
 
@@ -73,3 +70,15 @@ def semantic_search(db: Session, query: str, limit: int = 3):
         .order_by(Document.embedding.cosine_distance(query_vector))
         .limit(limit)
     ).all()
+
+
+def rebuild_chunks(db: Session, document: Document):
+    """Delete the chunks of a document and make them again from its content.
+
+    Use it when the content changes, or to redo all the chunks(reindex)
+    """
+
+    # Delete the old chunks
+    db.execute(delete(Chunk).where(Chunk.document_id == document.id))
+    # Make the new chunks from the content
+    save_chunks(db, document)
