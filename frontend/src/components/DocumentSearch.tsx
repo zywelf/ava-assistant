@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import type { DocumentItem } from '../types'
+import type { SearchResult } from '../types'
 import { semanticSearch } from '../api'
 
 function DocumentSearch() {
   const [query, setQuery] = useState<string>('')
-  const [results, setResult] = useState<DocumentItem[] | null>(null)
+  const [results, setResult] = useState<SearchResult[] | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
@@ -51,13 +51,14 @@ function DocumentSearch() {
 
       {results !== null && results.length > 0 && (
         <ol className="flex flex-col gap-3">
-          {results.map((doc, index) => (
-            <li key={doc.id} className="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
+          {results.map((result, index) => (
+            <li key={`${result.document_id}-${result.position}`} className="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
               <h3 className="font-semibold text-zinc-100">
                 <span className="text-accent mr-2">#{index + 1}</span>
-                {doc.title}
+                {result.title}
+                <span className='text-zinc-500 font-normal'> · part {result.position + 1}</span>
               </h3>
-              <p className="text-zinc-400 text-sm mt-1 line-clamp-2">{doc.content}</p>
+              <p className="text-zinc-400 text-sm mt-1 line-clamp-2">{result.content}</p>
             </li>
           ))}
         </ol>

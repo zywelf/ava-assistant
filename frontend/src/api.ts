@@ -1,4 +1,4 @@
-import type { DocumentItem } from './types'
+import type { DocumentItem, SearchResult } from './types'
 
 const BASE_URL = 'http://localhost:8000'
 
@@ -48,7 +48,7 @@ export async function uploadDocument(file: File): Promise<DocumentItem> {
   return res.json()
 }
 
-export async function semanticSearch(query: string): Promise<DocumentItem[]> {
+export async function semanticSearch(query: string): Promise<SearchResult[]> {
   const res = await fetch(`${BASE_URL}/documents/semantic-search?query=${encodeURIComponent(query)}`)
   if (!res.ok) {
     throw new Error(await errorMessage(res, 'Search failed'))
