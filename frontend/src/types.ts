@@ -5,8 +5,8 @@ export interface DocumentItem {
 }
 
 export interface SearchResult {
-  document_id: string
+  document_id: number
   title: string
-  position: string
+  position: number
   content: string
 }

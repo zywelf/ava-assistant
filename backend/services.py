@@ -1,9 +1,8 @@
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
-from db_models import Document
+from db_models import Document, Chunk
 from models import DocumentCreate
 from embeddings import embed
-from db_models import Chunk
 from chunking import chunk_text
 
 
