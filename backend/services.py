@@ -34,9 +34,7 @@ def save_chunks(db: Session, document: Document):
 
 
 def create_document(db: Session, doc: DocumentCreate):
-    new_doc = Document(
-        title=doc.title, content=doc.content, embedding=embed(doc.content)
-    )
+    new_doc = Document(title=doc.title, content=doc.content)
     db.add(new_doc)
     db.flush()
     save_chunks(db, new_doc)
@@ -56,7 +54,6 @@ def update_document(db: Session, doc_id, doc: DocumentCreate):
     existing = db.get(Document, doc_id)
     existing.title = doc.title
     existing.content = doc.content
-    existing.embedding = embed(doc.content)
 
     rebuild_chunks(db, existing)
     db.commit()
