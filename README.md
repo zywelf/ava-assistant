@@ -41,31 +41,45 @@ on the roadmap.
   languages on the same "map of meaning", so English queries find Italian
   documents and vice versa
 - Keyword search (case-insensitive) kept alongside semantic search
-- Embeddings computed once at ingest time and recomputed on update
+- **Chunking**: long documents are split into ~80-word pieces (on sentence
+  boundaries, with overlap), each with its own embedding, so search finds the
+  exact passage instead of only the start of a document
+- Search results show the matching passage and the document it comes from
+- Chunks are rebuilt when a document is updated, and deleted with it (cascade)
 - Typed end-to-end (Pydantic on the backend, TypeScript on the frontend)
 
 ## How semantic search works
 
 ```
-INDEXING TIME (document saved)           QUERY TIME (user searches)
-  content → embedding (384 numbers)        query → embedding
-  stored in PostgreSQL (pgvector)          ORDER BY cosine distance → top 3
+INDEXING TIME (document saved)                QUERY TIME (user searches)
+  content → chunks (~80 words each)             query → embedding
+  each chunk → embedding (384 numbers)          ORDER BY cosine distance → top 3 chunks
+  stored in PostgreSQL (pgvector)               + title of the source document
 ```
 
-1. When a document is created or updated, its content is turned into an
-   **embedding**: a list of 384 numbers representing its meaning
-   (`paraphrase-multilingual-MiniLM-L12-v2`, running locally).
-2. The embedding is stored in a `vector(384)` column thanks to pgvector.
-3. A search turns the query into an embedding and returns the documents whose
-   vectors are closest by **cosine distance** (top-K, K = 3).
+1. When a document is created or updated, its content is split into **chunks**:
+   pieces of about 80 words, cut on sentence boundaries, where each chunk starts
+   with the last sentence of the previous one (overlap). The embedding model reads
+   at most 128 tokens, so a whole long document would be cut after its first lines.
+2. Each chunk is turned into an **embedding**: a list of 384 numbers representing
+   its meaning (`paraphrase-multilingual-MiniLM-L12-v2`, running locally), stored
+   in a `vector(384)` column thanks to pgvector.
+3. A search turns the query into an embedding and returns the chunks whose
+   vectors are closest by **cosine distance** (top-K, K = 3), together with the
+   title of the document they come from.
 
 Equivalent SQL:
 
 ```sql
-SELECT * FROM documents
-ORDER BY embedding <=> '[0.18, 0.19, ...]'   -- cosine distance
+SELECT chunks.*, documents.title
+FROM chunks
+JOIN documents ON chunks.document_id = documents.id
+ORDER BY chunks.embedding <=> '[0.18, 0.19, ...]'   -- cosine distance
 LIMIT 3;
 ```
+
+Data model: one document has many chunks (`chunks.document_id` is a foreign key
+with `ON DELETE CASCADE`, indexed).
 
 ## Architecture
 
@@ -81,9 +95,11 @@ The backend follows a layered structure — each module has one responsibility:
 main.py        → routes (HTTP only: request in, response out, errors → status codes)
 services.py    → business logic + data access (SQLAlchemy)
 embeddings.py  → text → vector (embedding model loaded once at startup)
+chunking.py    → text → chunks (sentence split, overlap, cut of too-long sentences)
 extraction.py  → file → text (format checks, PDF/text extraction, domain errors)
 db.py          → engine, idempotent setup (pgvector extension + tables), get_db
-db_models.py   → ORM models (database tables)
+db_models.py   → ORM models (documents, chunks)
+reindex.py     → script: rebuild the chunks of every document
 models.py      → Pydantic schemas (API input/output)
 ```
 
@@ -144,6 +160,14 @@ uvicorn main:app --reload       # runs on http://localhost:8000
 
 Interactive API docs are available at `http://localhost:8000/docs`.
 
+To rebuild the chunks of all documents (e.g. after changing the chunk size or the
+embedding model, or for documents created before chunking existed):
+
+```bash
+cd backend
+python reindex.py
+```
+
 ### 3. Frontend
 
 ```bash
@@ -166,7 +190,7 @@ npm run dev                     # runs on http://localhost:5173
 | GET    | `/documents`                 | List all documents                               |
 | GET    | `/documents/titles`          | List document titles                             |
 | GET    | `/documents/search`          | Keyword search by `keyword` (case-insensitive)   |
-| GET    | `/documents/semantic-search` | Semantic search by `query` (top 3 by meaning)    |
+| GET    | `/documents/semantic-search` | Semantic search by `query`: top 3 matching passages with their document |
 | POST   | `/documents`                 | Create a document (JSON)                         |
 | POST   | `/documents/upload`          | Upload a file and extract its text               |
 | PUT    | `/documents/{id}`            | Update a document (embedding is recomputed)      |
@@ -179,7 +203,7 @@ npm run dev                     # runs on http://localhost:5173
 - [x] File upload with text extraction
 - [x] PostgreSQL + pgvector in Docker
 - [x] Embeddings + semantic search (backend and UI)
-- [ ] Chunking: split long documents into searchable pieces
+- [x] Chunking: split long documents into searchable pieces
 - [ ] RAG: ask questions in natural language, answers citing the documents (local LLM)
 - [ ] Chat with conversation memory
 - [ ] Agents: a generator and a verifier working together (LangGraph)
