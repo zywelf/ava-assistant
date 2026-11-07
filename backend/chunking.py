@@ -1,23 +1,28 @@
 import re
 
-# Max words per chunk: ~80 words fit inside the model's 128-token window
+# Max words in one chunk. The model reads max 128 tokens, about 80 words
 MAX_WORDS = 80
 
 
 def split_sentences(text: str) -> list[str]:
-    """Split a text into sentences (or paragraphs, when there is a blank line)."""
-    # Cut on spaces after . ! ? OR on blank lines (end of a paragraph)
+    """Split a text into sentences.
+
+    Example: "Hi. How are you?" to ["Hi.", "How are you?"]
+    """
+    # Cut after . ! ? or where there is an empty line
     sentences = re.split(r"(?<=[.!?])\s+|\n\s*\n", text.strip())
-    # Drop empty strings
+    # Remove the empty ones
     return [s for s in sentences if s]
 
 
 def split_long(sentence: str, max_words: int) -> list[str]:
-    """Emergency knife: cut a sentence longer than max_words into smaller pieces."""
+    """If a sentence is too long, cut it in smaller parts of max_words.
+
+    Example with max_words = 4: "a b c d e f" to ["a b c d", "e f"]
+    A short sentence stays the same: "a b" to ["a b"]
+    """
     words = sentence.split()
-    # i = start of each piece (0, max_words, 2*max_words, ...)
-    # each piece = the words from i to i + max_words
-    # a short sentence comes back unchanged, as a one-item list
+    # i is where each part starts: 0, 4, 8...
     return [
         " ".join(words[i:i + max_words])
         for i in range(0, len(words), max_words)
@@ -25,34 +30,43 @@ def split_long(sentence: str, max_words: int) -> list[str]:
 
 
 def chunk_text(text: str, max_words: int = MAX_WORDS) -> list[str]:
-    """Split a text into chunks of up to max_words, cut on sentence boundaries,
-    with a one-sentence overlap between consecutive chunks."""
+    """Split a text in chunks of max max_words.
 
-    # 1. Text → sentences → pieces (long sentences are cut, short ones stay whole)
+    Each new chunk starts with the last sentence of the chunk before,
+    so we don't lose the meaning between two chunks.
+    """
+    # First: text to sentences, and cut the sentences that are too long
     pieces = []
     for sentence in split_sentences(text):
-        pieces.extend(split_long(sentence, max_words))   # extend: add each piece, not the list
+        pieces.extend(split_long(sentence, max_words))
 
-    # 2. Fill the "boxes" with pieces
-    chunks = []          # closed boxes: the final chunks (strings)
-    current = []         # the open box: pieces not yet joined
-    current_words = 0    # how many words are in the open box
+    chunks = []          # The finished chunks
+    current = []         # The chunk we are filling now
+    current_words = 0    # How many words are in the chunk we are filling
 
     for piece in pieces:
         words = len(piece.split())
 
-        # The piece doesn't fit: close the box and open a new one
+        # The new sentence doesn't fit: save the chunk and start a new one
         if current and current_words + words > max_words:
-            chunks.append(" ".join(current))     # close: join the pieces into one string
-            last = current[-1]                   # overlap: keep the last piece...
-            current = [last]                     # ...as the first one of the new box
-            current_words = len(last.split())
+            chunks.append(" ".join(current))
+            last = current[-1]               # The last sentence of the saved chunk
+            last_words = len(last.split())
 
-        # Put the piece in the open box
+            # Start the new chunk with the last sentence, only if it fits
+            if last_words + words <= max_words:
+                current = [last]
+                current_words = last_words
+            # Too big: start the new chunk empty
+            else:
+                current = []
+                current_words = 0
+
+        # Add the sentence to the chunk we are filling
         current.append(piece)
         current_words += words
 
-    # Close the last box, if it isn't empty
+    # Save the last chunk
     if current:
         chunks.append(" ".join(current))
 
