@@ -19,6 +19,9 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 /** Get all the documents. */
 export async function getDocuments(): Promise<DocumentItem[]> {
   const res = await fetch(`${BASE_URL}/documents`)
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, 'Load failed'))
+  }
   const data = await res.json()
   return data
 }
@@ -34,6 +37,9 @@ export async function createDocument(doc: Omit<DocumentItem, 'id'>): Promise<Doc
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(doc), // Object to JSON text
   })
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, 'Create failed'))
+  }
   return res.json()
 }
 
@@ -44,12 +50,18 @@ export async function updateDocument(id: number, doc: Omit<DocumentItem, 'id'>):
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(doc),
   })
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, 'Update failed'))
+  }
   return res.json()
 }
 
 /** Delete the document with this id (its chunks are deleted too). */
 export async function deleteDocument(id: number): Promise<void> {
-  await fetch(`${BASE_URL}/documents/${id}`, { method: 'DELETE' })
+  const res = await fetch(`${BASE_URL}/documents/${id}`, { method: 'DELETE' })
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, 'Delete failed'))
+  }
 }
 
 /**

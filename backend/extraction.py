@@ -34,5 +34,5 @@ def extract_text(file_name: str, content: bytes) -> str:
     else:
         text = content.decode("utf-8-sig")  # Bytes to text ("-sig" removes the BOM)
     if not text.strip():
-        raise EmptyTextError("Not extractable text found in the file.")
+        raise EmptyTextError("No extractable text found in the file.")
     return text
