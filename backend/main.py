@@ -1,3 +1,4 @@
+from os import name
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -5,6 +6,8 @@ from models import DocumentCreate, DocumentRead, SearchResult
 from db import get_db
 from extraction import UnsupportedFormatError, EmptyTextError, extract_text
 import services
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 
 # The routes of the API: they only handle HTTP (request in, response out).
 # The real work is done in services.py
@@ -20,6 +23,18 @@ app.add_middleware(
     allow_methods=["*"],  # Allow GET, POST, etc.
     allow_headers=["*"],
 )
+
+@app.exception_handler(OperationalError)
+def database_unavailable(request, exc):
+  """Answer with a clear error when the database can't be reached.
+
+  Example: the database container is stopped -> 503 "Database not available"
+  """
+  return JSONResponse(
+    status_code=503,
+    content={"detail": "Database not available, try again in a moment"},
+  )
+
 
 
 @app.get("/")

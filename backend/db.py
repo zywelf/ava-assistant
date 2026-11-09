@@ -11,7 +11,7 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # The connection to the database, created once for the whole app
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, connect_args={"connect_timeout": 5})
 
 # Turn on pgvector. "IF NOT EXISTS": safe to run at every start
 with engine.begin() as conn:

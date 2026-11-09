@@ -20,14 +20,17 @@ function DocumentForm({ editingDoc, onCreate, onUpdate, onCancel }: DocumentForm
     }
     setError('')
     const data: Omit<DocumentItem, 'id'> = { title: title.trim(), content }
-
-    if (editingDoc === null) {
-      await onCreate(data)
-      setTitle('')
-      setContent('')
-    } else {
-      await onUpdate(editingDoc.id, data)
-      onCancel()
+    try {
+      if (editingDoc === null) {
+        await onCreate(data)
+        setTitle('')
+        setContent('')
+      } else {
+        await onUpdate(editingDoc.id, data)
+        onCancel()
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed')
     }
   }
 
