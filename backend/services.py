@@ -9,6 +9,9 @@ from chunking import chunk_text
 # they get data, use the database and give data back
 
 
+MAX_DISTANCE = 0.65  # Define the margin of distance result ideal
+
+
 def get_documents(db: Session):
     """Return all the documents."""
     return db.scalars(select(Document)).all()
@@ -76,24 +79,25 @@ def semantic_search(db: Session, query: str, limit: int = 3):
     Example: "backend tech" finds the README part about FastAPI and PostgreSQL
     """
     query_vector = embed(query)
+    distance_rule = Chunk.embedding.cosine_distance(query_vector)
     rows = db.execute(
-        select(Chunk, Document.title)
+        select(Chunk, Document.title, distance_rule.label("distance"))
         .join(Document, Chunk.document_id == Document.id)
-        .order_by(  # Compare with the CHUNK, not the document
-            Chunk.embedding.cosine_distance(query_vector)
-        )
+        .where(distance_rule < MAX_DISTANCE)
+        .order_by(distance_rule)  # Compare with the CHUNK, not the document
         .limit(limit)
     ).all()
 
-    # Turn each row (chunk, title) into a result
+    # Turn each row (chunk, title, distance) into a result
     return [
         {
             "document_id": chunk.document_id,
             "title": title,
             "position": chunk.position,
             "content": chunk.content,
+            "distance": distance,
         }
-        for chunk, title in rows
+        for chunk, title, distance in rows
     ]
 
 

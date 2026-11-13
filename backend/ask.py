@@ -12,4 +12,9 @@ def answer_question(db: Session, question: str) -> dict:
     results = services.semantic_search(db, question)
     messages = rag.build_messages(question, results)
     answer = llm.chat(messages)
+    if not results:
+        return {
+            "answer": "I couldn't find anything about this in your documents.",
+            "sources": [],
+        }
     return {"answer": answer, "sources": results}

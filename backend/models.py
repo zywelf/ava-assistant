@@ -30,10 +30,11 @@ class DocumentRead(BaseModel):
 class SearchResult(BaseModel):
     """One search result: the piece of text found, and the document it comes from.
 
-    Example: title "README.md", position 2, content "Separate backend and..."
+    Example: title "README.md", position 2, content "Separate backend and...", distance 0.31
     """
 
     document_id: int
     title: str
     position: int
     content: str  # The text of the chunk, not the whole document
+    distance: float   # 0 = same meaning, 1 = unrelated, 2 = opposite
