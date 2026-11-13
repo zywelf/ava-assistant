@@ -7,6 +7,7 @@ from extraction import UnsupportedFormatError, EmptyTextError, extract_text
 import services
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
+import httpx
 
 # The routes of the API: they only handle HTTP (request in, response out).
 # The real work is done in services.py
@@ -33,6 +34,13 @@ def database_unavailable(request, exc):
         content={"detail": "Database not available, try again in a moment"},
     )
 
+
+@app.exception_handler(httpx.HTTPError)
+def llm_error_handler(request, exc):
+    return JSONResponse(
+      status_code=503,
+      content={"detail": "LLM not available, try again in a moment"}
+    )
 
 @app.get("/")
 def read_root():
