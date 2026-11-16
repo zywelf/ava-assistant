@@ -9,4 +9,10 @@ export interface SearchResult {
   title: string
   position: number
   content: string
+  distance: number
+}
+
+export interface AskResponse {
+  answer: string
+  sources: SearchResult[]
 }

@@ -1,4 +1,4 @@
-import type { DocumentItem, SearchResult } from './types'
+import type { AskResponse, DocumentItem, SearchResult } from './types'
 
 // All the calls from the frontend to the backend API live here.
 // The components never use fetch directly: they use these functions
@@ -94,6 +94,18 @@ export async function semanticSearch(query: string): Promise<SearchResult[]> {
   const res = await fetch(`${BASE_URL}/documents/semantic-search?query=${encodeURIComponent(query)}`)
   if (!res.ok) {
     throw new Error(await errorMessage(res, 'Search failed'))
+  }
+  return res.json()
+}
+
+export async function askQuestion(question: string): Promise<AskResponse> {
+  const res = await fetch(`${BASE_URL}/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: question }),
+  })
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, 'Ask failed'))
   }
   return res.json()
 }
