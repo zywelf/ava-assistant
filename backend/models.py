@@ -37,4 +37,23 @@ class SearchResult(BaseModel):
     title: str
     position: int
     content: str  # The text of the chunk, not the whole document
-    distance: float   # 0 = same meaning, 1 = unrelated, 2 = opposite
+    distance: float  # 0 = same meaning, 1 = unrelated, 2 = opposite
+
+
+class AskRequest(BaseModel):
+    """What the user asks Ava.
+
+    Example: question "What is a chunk?"
+    """
+
+    question: str
+
+
+class AskResponse(BaseModel):
+    """Ava's answer and the document parts she used to write it.
+
+    Example: answer "A chunk is a piece of a document [1], sources [the chunk with the number 1]
+    """
+
+    answer: str
+    sources: list[SearchResult]

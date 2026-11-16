@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from models import DocumentCreate, DocumentRead, SearchResult
+from models import AskRequest, AskResponse, DocumentCreate, DocumentRead, SearchResult
 from db import get_db
 from extraction import UnsupportedFormatError, EmptyTextError, extract_text
 import services
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
+import ask
 import httpx
 
 # The routes of the API: they only handle HTTP (request in, response out).
@@ -117,3 +118,8 @@ def semantic_search(query: str, db: Session = Depends(get_db)):
     Example: /documents/semantic-search?query=car also finds "automobili"
     """
     return services.semantic_search(db, query)
+
+
+@app.post("/ask", response_model=AskResponse)
+def ask_question(request: AskRequest, db: Session = Depends(get_db)):
+    return ask.answer_question(db, request.question)
