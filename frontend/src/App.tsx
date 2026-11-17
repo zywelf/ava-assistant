@@ -6,6 +6,7 @@ import DocumentList from './components/DocumentList'
 import DocumentUpload from './components/DocumentUpload'
 import DocumentSearch from './components/DocumentSearch'
 import Section from './components/Section'
+import DocumentAsk from './components/DocumentAsk'
 
 function App() {
   const { docs, loading, loadError, createDoc, updateDoc, removeDoc, uploadDoc } = useDocuments()
@@ -42,6 +43,9 @@ function App() {
             onUpdate={updateDoc}
             onCancel={() => setEditingDoc(null)}
           />
+        </Section>
+        <Section title='Ask your documents' description='Answers come only from your documents, with sources'>
+          <DocumentAsk />
         </Section>
         <Section title="Semantic Search" description="Search by meaning, not by exact words">
           <DocumentSearch />
