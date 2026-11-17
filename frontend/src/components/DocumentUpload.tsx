@@ -9,11 +9,13 @@ function DocumentUpload({ onUpload }: DocumentUploadProps) {
   const [uploadError, setUploadError] = useState<string>('')
   const [uploadSuccess, setUploadSuccess] = useState<string>('')
   const [inputKey, setInputKey] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(false)
 
   async function handleUpload() {
     if (!selectedFile) return
     try {
       setUploadError('')
+      setLoading(true)
       await onUpload(selectedFile)
       setUploadSuccess(`"${selectedFile.name}" uploaded successfully`)
       setTimeout(() => setUploadSuccess(''), 3000)
@@ -21,6 +23,8 @@ function DocumentUpload({ onUpload }: DocumentUploadProps) {
       setInputKey((k) => k + 1)
     } catch (e) {
       setUploadError(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -34,10 +38,10 @@ function DocumentUpload({ onUpload }: DocumentUploadProps) {
       />
       <button
         onClick={handleUpload}
-        disabled={!selectedFile}
+        disabled={!selectedFile || loading}
         className="rounded-lg bg-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition"
       >
-        Upload
+        {loading ? 'Uploading...' : 'Upload'}
       </button>
       {uploadError && <p className="w-full text-red-500 text-sm">{uploadError}</p>}
       {uploadSuccess && <p className="w-full text-emerald-500 text-sm">{uploadSuccess}</p>}
