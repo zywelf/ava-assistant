@@ -83,12 +83,12 @@ def create_document(doc: DocumentCreate, db: Session = Depends(get_db)):
 
 
 @app.post("/documents/upload", response_model=DocumentRead)
-async def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Upload a file, take its text and save it as a document.
 
     Wrong format gives 415, a file with no text (like a scanned PDF) gives 422
     """
-    content = await file.read()  # Read the bytes of the file
+    content = file.file.read()  # Read the bytes of the file
     try:
         text = extract_text(file.filename, content)
     except UnsupportedFormatError as e:
