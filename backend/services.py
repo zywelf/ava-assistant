@@ -1,7 +1,7 @@
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from db_models import Document, Chunk
-from models import DocumentCreate
+from models import DocumentCreate, SearchResult
 from embeddings import embed
 from chunking import chunk_text
 
@@ -73,7 +73,7 @@ def update_document(db: Session, doc_id, doc: DocumentCreate):
     return existing
 
 
-def semantic_search(db: Session, query: str, limit: int = 3):
+def semantic_search(db: Session, query: str, limit: int = 3) -> list[SearchResult]:
     """Find the chunks closest in meaning to the query.
 
     Example: "backend tech" finds the README part about FastAPI and PostgreSQL
@@ -90,13 +90,13 @@ def semantic_search(db: Session, query: str, limit: int = 3):
 
     # Turn each row (chunk, title, distance) into a result
     return [
-        {
-            "document_id": chunk.document_id,
-            "title": title,
-            "position": chunk.position,
-            "content": chunk.content,
-            "distance": distance,
-        }
+        SearchResult(
+            document_id=chunk.document_id,
+            title=title,
+            position=chunk.position,
+            content=chunk.content,
+            distance=distance,
+        )
         for chunk, title, distance in rows
     ]
 

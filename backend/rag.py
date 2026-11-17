@@ -1,3 +1,5 @@
+from models import SearchResult
+
 # The rules the LLM must follow in every answer (the "system" message)
 SYSTEM_PROMPT = """You are Ava, an assistant that answers questions about the user's documents.
 
@@ -9,7 +11,7 @@ Rules:
 """
 
 
-def build_messages(question: str, results: list[dict]) -> list[dict]:
+def build_messages(question: str, results: list[SearchResult]) -> list[dict]:
     """Build the messages for the LLM: the rules, the found texts and the question.
 
     Example: 3 search results + "Which backend?" to [system message, user message]
@@ -18,7 +20,7 @@ def build_messages(question: str, results: list[dict]) -> list[dict]:
     blocks = []
     for number, result in enumerate(results, start=1):
         blocks.append(
-            f"[{number}] ({result['title']} · part {result['position'] + 1})\n{result['content']}"
+            f"[{number}] ({result.title} · part {result.position + 1})\n{result.content}"
         )
 
     # The texts, then the question
