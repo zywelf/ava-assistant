@@ -12,6 +12,12 @@ from chunking import chunk_text
 MAX_DISTANCE = 0.65  # Define the margin of distance result ideal
 
 
+class DocumentNotFoundError(Exception):
+    """No document has this id, like asking for document 9999 when there are only 10."""
+
+    pass
+
+
 def get_documents(db: Session):
     """Return all the documents."""
     return db.scalars(select(Document)).all()
@@ -55,16 +61,22 @@ def create_document(db: Session, doc: DocumentCreate):
 
 
 def delete_document(db: Session, doc_id):
-    """Delete a document. Its chunks are deleted by the database (cascade)."""
+    """Delete a document. Its chunks are deleted by the database (cascade).
+
+    Raises DocumentNotFoundError if no document has this id
+    """
     doc = db.get(Document, doc_id)
-    if doc:
-        db.delete(doc)
-        db.commit()
+    if doc is None:
+        raise DocumentNotFoundError(f"Document {doc_id} not found")
+    db.delete(doc)
+    db.commit()
 
 
 def update_document(db: Session, doc_id, doc: DocumentCreate):
     """Change the title and the content of a document, and redo its chunks."""
     existing = db.get(Document, doc_id)
+    if existing is None:
+        raise DocumentNotFoundError(f"Document {doc_id} not found")
     existing.title = doc.title
     existing.content = doc.content
 

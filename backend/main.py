@@ -11,6 +11,7 @@ from sqlalchemy.exc import OperationalError
 import ask
 import httpx
 from contextlib import asynccontextmanager
+from services import DocumentNotFoundError
 
 # The routes of the API: they only handle HTTP (request in, response out).
 # The real work is done in services.py
@@ -22,8 +23,8 @@ async def lifespan(app: FastAPI):
 
     Example: start the server → tables ready and embedding model loaded
     """
-    init_db()     # Prepare the databse
-    get_model()   # Load the embedding model now, so the first search is fast
+    init_db()  # Prepare the databse
+    get_model()  # Load the embedding model now, so the first search is fast
     yield
 
 
@@ -59,6 +60,15 @@ def llm_error_handler(request, exc):
     return JSONResponse(
         status_code=503, content={"detail": "LLM not available, try again in a moment"}
     )
+
+
+@app.exception_handler(DocumentNotFoundError)
+def document_not_found(request, exc):
+    """Answer with 404 when a document doesn't exist.
+
+    Example: DELETE /documents/9999 → 404 "Document 9999 not found"
+    """
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 
 @app.get("/")
