@@ -1,19 +1,33 @@
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from embeddings import get_model
 from models import AskRequest, AskResponse, DocumentCreate, DocumentRead, SearchResult
-from db import get_db
+from db import get_db, init_db
 from extraction import UnsupportedFormatError, EmptyTextError, extract_text
 import services
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 import ask
 import httpx
+from contextlib import asynccontextmanager
 
 # The routes of the API: they only handle HTTP (request in, response out).
 # The real work is done in services.py
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """What to do when the server starts (before yield) and stops (after yield).
+
+    Example: start the server → tables ready and embedding model loaded
+    """
+    init_db()     # Prepare the databse
+    get_model()   # Load the embedding model now, so the first search is fast
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,10 +52,14 @@ def database_unavailable(request, exc):
 
 @app.exception_handler(httpx.HTTPError)
 def llm_error_handler(request, exc):
+    """Answer with a clear error when the LLM can't be reached.
+
+    Example: Ollama is closed → 503 "LLM not available"
+    """
     return JSONResponse(
-      status_code=503,
-      content={"detail": "LLM not available, try again in a moment"}
+        status_code=503, content={"detail": "LLM not available, try again in a moment"}
     )
+
 
 @app.get("/")
 def read_root():
@@ -122,4 +140,8 @@ def semantic_search(query: str, db: Session = Depends(get_db)):
 
 @app.post("/ask", response_model=AskResponse)
 def ask_question(request: AskRequest, db: Session = Depends(get_db)):
+    """What to do when the server starts (before yield) and stops (after yield).
+
+    Example: start the server → pgvector is turned on and the tables are created
+    """
     return ask.answer_question(db, request.question)
