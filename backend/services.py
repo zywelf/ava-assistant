@@ -23,6 +23,19 @@ def get_documents(db: Session):
     return db.scalars(select(Document)).all()
 
 
+def get_document(db: Session, doc_id: int):
+    """Give one document from its id.
+
+    Raise DocumentNotFoundError if no document has this id
+    """
+
+    doc = db.get(Document, doc_id)
+
+    if doc is None:
+        raise DocumentNotFoundError(f"Document {doc_id} not found")
+    return doc
+
+
 def search_documents(db: Session, keyword: str):
     """Find the documents that contain a word (upper or lower case doesn't matter).
 

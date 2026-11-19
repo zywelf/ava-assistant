@@ -148,6 +148,17 @@ def semantic_search(query: str, db: Session = Depends(get_db)):
     return services.semantic_search(db, query)
 
 
+# Keep this route AFTER the fixed /documents/... routes (titles, search, semantic-search):
+# otherwise "/documents/semantic-search" is read as doc_id = "semantic-search"
+@app.get("/documents/{doc_id}", response_model=DocumentRead)
+def read_document(doc_id: int, db: Session = Depends(get_db)):
+    """Return one document.
+
+    Example: GET /documents/5 → the document with id 5, or 404 if it doesn't exist
+    """
+    return services.get_document(db, doc_id)
+
+
 @app.post("/ask", response_model=AskResponse)
 def ask_question(request: AskRequest, db: Session = Depends(get_db)):
     """What to do when the server starts (before yield) and stops (after yield).
