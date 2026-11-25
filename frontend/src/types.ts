@@ -12,7 +12,11 @@ export interface SearchResult {
   distance: number
 }
 
+export interface CitedSource extends SearchResult {
+  number: number
+}
+
 export interface AskResponse {
   answer: string
-  sources: SearchResult[]
+  sources: CitedSource[]
 }

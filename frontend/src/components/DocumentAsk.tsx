@@ -52,10 +52,10 @@ function DocumentAsk() {
           </p>
           {response.sources.length > 0 && (
             <ol className="flex flex-col gap-2">
-              {response.sources.map((source, index) => (
+              {response.sources.map((source) => (
                 <li key={`${source.document_id}-${source.position}`} className='bg-zinc-950 border border-zinc-800 rounded-lg p-3'>
                   <h3 className='text-sm font-semibold text-zinc-300'>
-                    <span className="text-accent mr-2">[{index + 1}]</span>
+                    <span className="text-accent mr-2">[{source.number}]</span>
                     {source.title}
                     <span className='text-zinc-500 font-normal'> · part {source.position + 1}</span>
                   </h3>

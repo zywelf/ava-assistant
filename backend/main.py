@@ -13,9 +13,6 @@ import httpx
 from contextlib import asynccontextmanager
 from services import DocumentNotFoundError
 
-# The routes of the API: they only handle HTTP (request in, response out).
-# The real work is done in services.py
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

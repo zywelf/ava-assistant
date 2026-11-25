@@ -1,5 +1,6 @@
 import re
 from sqlalchemy.orm import Session
+from models import CitedSource
 import services
 import rag
 import llm
@@ -18,7 +19,7 @@ def answer_question(db: Session, question: str) -> dict:
     cited_numbers = {int(n) for n in cited}  # ["1", "2"] to {1, 2}
 
     sources = [
-        chunk
+        CitedSource(**chunk.model_dump(), number=number)
         for number, chunk in enumerate(results, start=1)
         if number in cited_numbers
     ]

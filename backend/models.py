@@ -49,11 +49,19 @@ class AskRequest(BaseModel):
     question: str
 
 
+class CitedSource(SearchResult):
+    """A search result that the answer cites, with the number used in the answer.
+
+    Example: the README chunk cited as [2] → number 2
+    """
+
+    number: int   # The [n] written in the answer
+
 class AskResponse(BaseModel):
     """Ava's answer and the document parts she used to write it.
 
-    Example: answer "A chunk is a piece of a document [1], sources [the chunk with the number 1]
+    Example: answer "A chunk is a piece of a document [1]", sources [the chunk with the number 1]
     """
 
     answer: str
-    sources: list[SearchResult]
+    sources: list[CitedSource]
