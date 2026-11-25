@@ -17,6 +17,7 @@ def chat(messages: list[dict]) -> str:
         "model": OLLAMA_MODEL,
         "messages": messages,
         "stream": False,
+        "options": {"temperature": 0}
       },
       timeout=60
     )
