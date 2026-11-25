@@ -50,10 +50,18 @@ on the roadmap.
 - Search results show the matching passage, the document it comes from and its
   distance; passages too far from the query are discarded (distance threshold)
 - **Ask your documents (RAG)**: questions in natural language, answered by a local
-  LLM using **only** the passages found, with numbered citations (`[1]`) and the
-  sources shown below the answer
+  LLM using **only** the passages found, with numbered citations (`[1]`)
+- **Only the cited sources** are shown below the answer, with the same number
+  used in the text; citations are clickable and open the full passage
 - When nothing relevant is found, Ava says so without calling the LLM (no
-  made-up answers); if the LLM is not reachable the API returns `503`
+  made-up answers); the LLM runs at temperature 0, so the same question gives
+  the same answer
+- **Duplicate detection**: every document has a SHA-256 fingerprint of its
+  content, so the same file is rejected (`409`) even if it has another name
+- Clear errors instead of crashes: `404` for a missing document, `409` for a
+  duplicate, `503` when the database or the LLM is not reachable
+- The server stays responsive during long uploads (heavy work runs outside the
+  event loop) and shows the upload progress in the UI
 - Chunks are rebuilt when a document is updated, and deleted with it (cascade)
 - Typed end-to-end (Pydantic on the backend, TypeScript on the frontend)
 
@@ -131,10 +139,10 @@ The backend follows a layered structure — each module has one responsibility:
 ```
 main.py        → routes (HTTP only: request in, response out, errors → status codes)
 services.py    → business logic + data access (SQLAlchemy)
-embeddings.py  → text → vector (embedding model loaded once at startup)
+embeddings.py  → text → vector (model loaded once, lazily, and warmed up at startup)
 chunking.py    → text → chunks (sentence split, overlap, cut of too-long sentences)
 extraction.py  → file → text (format checks, PDF/text extraction, domain errors)
-db.py          → engine, idempotent setup (pgvector extension + tables), get_db
+db.py          → engine, init_db() (pgvector extension + tables, run in the app lifespan), get_db
 db_models.py   → ORM models (documents, chunks)
 reindex.py     → script: rebuild the chunks of every document
 models.py      → Pydantic schemas (API input/output)
@@ -248,9 +256,19 @@ npm run dev                     # runs on http://localhost:5173
 | GET    | `/documents/semantic-search` | Semantic search by `query`: up to 3 passages under the distance threshold, with their document and distance |
 | POST   | `/documents`                 | Create a document (JSON)                         |
 | POST   | `/documents/upload`          | Upload a file and extract its text               |
-| PUT    | `/documents/{id}`            | Update a document (embedding is recomputed)      |
-| DELETE | `/documents/{id}`            | Delete a document                                |
-| POST   | `/ask`                       | Ask a question (`{"question": "..."}`): answer from the documents + sources (`503` if the LLM is not reachable) |
+| GET    | `/documents/{id}`            | Read one document                                |
+| PUT    | `/documents/{id}`            | Update a document (chunks are rebuilt)           |
+| DELETE | `/documents/{id}`            | Delete a document (its chunks too)               |
+| POST   | `/ask`                       | Ask a question (`{"question": "..."}`): answer from the documents + the cited sources |
+
+**Errors**
+
+| Status | When |
+| ------ | ---- |
+| `404`  | No document with this id (`GET`, `PUT`, `DELETE /documents/{id}`) |
+| `409`  | A document with the same content already exists (create, upload, update) |
+| `415` / `422` | Unsupported file type / file with no extractable text (upload) |
+| `503`  | The database or the LLM (Ollama) is not reachable |
 
 ## Roadmap
 
