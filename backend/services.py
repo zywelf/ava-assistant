@@ -4,6 +4,7 @@ from db_models import Document, Chunk
 from models import DocumentCreate, SearchResult
 from embeddings import embed
 from chunking import chunk_text
+import hashlib
 
 # The real work of the app. These functions don't know anything about HTTP:
 # they get data, use the database and give data back
@@ -12,8 +13,22 @@ from chunking import chunk_text
 MAX_DISTANCE = 0.65  # Define the margin of distance result ideal
 
 
+def compute_hash(text: str) -> str:
+    """Give the fingerprint of a text: same text, same fingerprint.
+
+    Example: "ciao" and "ciao" → the same 64 characters, "Ciao" → completely different
+    """
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
 class DocumentNotFoundError(Exception):
     """No document has this id, like asking for document 9999 when there are only 10."""
+
+    pass
+
+
+class DuplicateDocumentError(Exception):
+    """A document with the same content is already saved, even if it has another name."""
 
     pass
 
@@ -63,8 +78,20 @@ def save_chunks(db: Session, document: Document):
 
 
 def create_document(db: Session, doc: DocumentCreate):
-    """Save a new document and its chunks."""
-    new_doc = Document(title=doc.title, content=doc.content)
+    """Save a new document and its chunks.
+
+    Raises DuplicateDocumentError if a document with the same content already exists
+    """
+    content_hash = compute_hash(doc.content)
+
+    # The guard: is this content already saved?
+    existing = db.scalars(
+        select(Document).where(Document.content_hash == content_hash)
+    ).first()
+    if existing:
+        raise DuplicateDocumentError(f'Already uploaded as "{existing.title}"')
+
+    new_doc = Document(title=doc.title, content=doc.content, content_hash=content_hash)
     db.add(new_doc)
     db.flush()  # Send the document to the DB to get its id, without saving yet
     save_chunks(db, new_doc)
@@ -86,12 +113,29 @@ def delete_document(db: Session, doc_id):
 
 
 def update_document(db: Session, doc_id, doc: DocumentCreate):
-    """Change the title and the content of a document, and redo its chunks."""
+    """Change the title and the content of a document, and redo its chunks.
+
+    Raises DocumentNotFoundError if no document has this id,
+    and DuplicateDocumentError if another document has the same content
+    """
+
     existing = db.get(Document, doc_id)
     if existing is None:
         raise DocumentNotFoundError(f"Document {doc_id} not found")
+
+    content_hash = compute_hash(doc.content)
+    duplicate = db.scalars(
+        select(Document).where(
+          Document.content_hash == content_hash,
+          Document.id != doc_id,
+        )
+    ).first()
+    if duplicate:
+        raise DuplicateDocumentError(f'Already uploaded as "{duplicate.title}"')
+    
     existing.title = doc.title
     existing.content = doc.content
+    existing.content_hash = content_hash
 
     rebuild_chunks(db, existing)  # The old chunks belong to the old content
     db.commit()

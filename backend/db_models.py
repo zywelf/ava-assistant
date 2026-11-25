@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, String
 from pgvector.sqlalchemy import Vector
 
 # The tables of the database, written as Python classes
@@ -22,6 +22,7 @@ class Document(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
     content: Mapped[str]
+    content_hash: Mapped[str] = mapped_column(String(64), unique=True)  # Fingerprint of the content, like "a3f5…9c21" (64 characters)
 
 
 class Chunk(Base):

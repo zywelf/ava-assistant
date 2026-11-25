@@ -11,7 +11,7 @@ from sqlalchemy.exc import OperationalError
 import ask
 import httpx
 from contextlib import asynccontextmanager
-from services import DocumentNotFoundError
+from services import DocumentNotFoundError, DuplicateDocumentError
 
 
 @asynccontextmanager
@@ -66,6 +66,15 @@ def document_not_found(request, exc):
     Example: DELETE /documents/9999 → 404 "Document 9999 not found"
     """
     return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+@app.exception_handler(DuplicateDocumentError)
+def duplicate_document(request, exc):
+    """Answer with 409 when the same content is already saved.
+
+    Example: upload the same PDF twice → 409 'Already uploaded as "book.pdf"'
+    """
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
 
 
 @app.get("/")
