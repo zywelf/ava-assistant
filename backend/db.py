@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from db_models import Base
-
+from alembic import command
+from alembic.config import Config
 
 # Read DATABASE_URL from the .env file (the password stays out of the code)
 load_dotenv()
@@ -18,17 +18,12 @@ SessionLocal = sessionmaker(bind=engine)
 
 
 def init_db():
-    """Prepare the database: turn on pgvector and create the missing tables.
+    """Bring the database to the latest migration (like "alembic upgrade head").
 
-    Called once when the server starts (see lifespan in main.py)
+    Example: on a new PC it creates all the tables, on mine it does nothing new
     """
-
-    # Turn on pgvector. "IF NOT EXISTS": safe to run at every start
-    with engine.begin() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
-
-    # Create the tables that don't exist yet (it never changes the existing ones)
-    Base.metadata.create_all(engine)
+    alembic_config = Config("alembic.ini")
+    command.upgrade(alembic_config, "head")
 
 
 def get_db():
