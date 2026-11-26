@@ -51,7 +51,7 @@ function DocumentAsk() {
       {response !== null && (
         <div className="flex flex-col gap-3">
           <p className="bg-zinc-950 border-l-4 border-accent rounded p-4 text-zinc-100 whitespace-pre-wrap">
-          {response.answer.split(/(\[\d+\])/).map((part, i) =>
+            {response.answer.split(/(\[\d+\])/).map((part, i) =>
               /^\[\d+\]$/.test(part) ? (
                 <span
                   key={i}

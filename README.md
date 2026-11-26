@@ -120,10 +120,10 @@ after each piece of information, and to answer in the language of the question.
 
 Two different models, two different jobs:
 
-| Model | Job | If you change it |
-| ----- | --- | ---------------- |
+| Model                                                | Job                       | If you change it                                  |
+| ---------------------------------------------------- | ------------------------- | ------------------------------------------------- |
 | `paraphrase-multilingual-MiniLM-L12-v2` (embeddings) | text → vectors, distances | re-run `reindex.py` and re-measure `MAX_DISTANCE` |
-| `gemma3:4b` (LLM, via Ollama) | writes the answer | nothing else to change |
+| `gemma3:4b` (LLM, via Ollama)                        | writes the answer         | nothing else to change                            |
 
 ## Architecture
 
@@ -248,27 +248,27 @@ npm run dev                     # runs on http://localhost:5173
 
 ## API Endpoints
 
-| Method | Path                         | Description                                      |
-| ------ | ---------------------------- | ------------------------------------------------ |
-| GET    | `/documents`                 | List all documents                               |
-| GET    | `/documents/titles`          | List document titles                             |
-| GET    | `/documents/search`          | Keyword search by `keyword` (case-insensitive)   |
+| Method | Path                         | Description                                                                                                 |
+| ------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| GET    | `/documents`                 | List all documents                                                                                          |
+| GET    | `/documents/titles`          | List document titles                                                                                        |
+| GET    | `/documents/search`          | Keyword search by `keyword` (case-insensitive)                                                              |
 | GET    | `/documents/semantic-search` | Semantic search by `query`: up to 3 passages under the distance threshold, with their document and distance |
-| POST   | `/documents`                 | Create a document (JSON)                         |
-| POST   | `/documents/upload`          | Upload a file and extract its text               |
-| GET    | `/documents/{id}`            | Read one document                                |
-| PUT    | `/documents/{id}`            | Update a document (chunks are rebuilt)           |
-| DELETE | `/documents/{id}`            | Delete a document (its chunks too)               |
-| POST   | `/ask`                       | Ask a question (`{"question": "..."}`): answer from the documents + the cited sources |
+| POST   | `/documents`                 | Create a document (JSON)                                                                                    |
+| POST   | `/documents/upload`          | Upload a file and extract its text                                                                          |
+| GET    | `/documents/{id}`            | Read one document                                                                                           |
+| PUT    | `/documents/{id}`            | Update a document (chunks are rebuilt)                                                                      |
+| DELETE | `/documents/{id}`            | Delete a document (its chunks too)                                                                          |
+| POST   | `/ask`                       | Ask a question (`{"question": "..."}`): answer from the documents + the cited sources                       |
 
 **Errors**
 
-| Status | When |
-| ------ | ---- |
-| `404`  | No document with this id (`GET`, `PUT`, `DELETE /documents/{id}`) |
-| `409`  | A document with the same content already exists (create, upload, update) |
-| `415` / `422` | Unsupported file type / file with no extractable text (upload) |
-| `503`  | The database or the LLM (Ollama) is not reachable |
+| Status        | When                                                                     |
+| ------------- | ------------------------------------------------------------------------ |
+| `404`         | No document with this id (`GET`, `PUT`, `DELETE /documents/{id}`)        |
+| `409`         | A document with the same content already exists (create, upload, update) |
+| `415` / `422` | Unsupported file type / file with no extractable text (upload)           |
+| `503`         | The database or the LLM (Ollama) is not reachable                        |
 
 ## Roadmap
 

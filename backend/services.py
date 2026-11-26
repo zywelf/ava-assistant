@@ -126,13 +126,13 @@ def update_document(db: Session, doc_id, doc: DocumentCreate):
     content_hash = compute_hash(doc.content)
     duplicate = db.scalars(
         select(Document).where(
-          Document.content_hash == content_hash,
-          Document.id != doc_id,
+            Document.content_hash == content_hash,
+            Document.id != doc_id,
         )
     ).first()
     if duplicate:
         raise DuplicateDocumentError(f'Already uploaded as "{duplicate.title}"')
-    
+
     existing.title = doc.title
     existing.content = doc.content
     existing.content_hash = content_hash

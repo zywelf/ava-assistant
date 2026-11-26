@@ -44,7 +44,7 @@ function App() {
             onCancel={() => setEditingDoc(null)}
           />
         </Section>
-        <Section title='Ask your documents' description='Answers come only from your documents, with sources'>
+        <Section title="Ask your documents" description="Answers come only from your documents, with sources">
           <DocumentAsk />
         </Section>
         <Section title="Semantic Search" description="Search by meaning, not by exact words">

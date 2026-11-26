@@ -55,7 +55,8 @@ class CitedSource(SearchResult):
     Example: the README chunk cited as [2] → number 2
     """
 
-    number: int   # The [n] written in the answer
+    number: int  # The [n] written in the answer
+
 
 class AskResponse(BaseModel):
     """Ava's answer and the document parts she used to write it.

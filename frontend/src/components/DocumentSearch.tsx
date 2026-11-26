@@ -52,11 +52,14 @@ function DocumentSearch() {
       {results !== null && results.length > 0 && (
         <ol className="flex flex-col gap-3">
           {results.map((result, index) => (
-            <li key={`${result.document_id}-${result.position}`} className="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
+            <li
+              key={`${result.document_id}-${result.position}`}
+              className="bg-zinc-950 border border-zinc-800 rounded-lg p-4"
+            >
               <h3 className="font-semibold text-zinc-100">
                 <span className="text-accent mr-2">#{index + 1}</span>
                 {result.title}
-                <span className='text-zinc-500 font-normal'> · part {result.position + 1}</span>
+                <span className="text-zinc-500 font-normal"> · part {result.position + 1}</span>
               </h3>
               <p className="text-zinc-400 text-sm mt-1 line-clamp-2">{result.content}</p>
             </li>
