@@ -42,7 +42,7 @@ def test_only_cited_sources_are_kept_with_their_number(monkeypatch):
         return [make_result("A.md"), make_result("B.md")]
 
     def fake_chat(messages):
-        return "Ava is a document assistant [2]." # an answer that cites only the second text
+        return "Ava is a document assistant [2]."  # an answer that cites only the second text
 
     monkeypatch.setattr(ask.services, "semantic_search", fake_search)
     monkeypatch.setattr(ask.llm, "chat", fake_chat)
@@ -53,3 +53,20 @@ def test_only_cited_sources_are_kept_with_their_number(monkeypatch):
     assert len(sources) == 1
     assert sources[0].title == "B.md"
     assert sources[0].number == 2
+
+
+def test_invented_citation_shows_no_source(monkeypatch):
+    """If the answer cites [3] but only 2 texts were found, no source is shown."""
+
+    def fake_search(db, question):
+        return [make_result("A.md"), make_result("B.md")]
+
+    def fake_chat(messages):
+        return "0.84 · 0.89 · 0.89 [3]"
+
+    monkeypatch.setattr(ask.services, "semantic_search", fake_search)
+    monkeypatch.setattr(ask.llm, "chat", fake_chat)
+
+    result = ask.answer_question(db=None, question="What is Ava?")
+
+    assert result["sources"] == []
