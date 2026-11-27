@@ -5,6 +5,9 @@ import services
 import rag
 import llm
 
+# What Ava says when the search finds nothing (used also by evals.py)
+NOT_FOUND_ANSWER = "I couldn't find anything about this in your documents."
+
 
 def answer_question(db: Session, question: str) -> dict:
     """Answer a question using the user's documents.
@@ -14,7 +17,7 @@ def answer_question(db: Session, question: str) -> dict:
     results = services.semantic_search(db, question)
     if not results:
         return {
-            "answer": "I couldn't find anything about this in your documents.",
+            "answer": NOT_FOUND_ANSWER,
             "sources": [],
         }
     messages = rag.build_messages(question, results)
